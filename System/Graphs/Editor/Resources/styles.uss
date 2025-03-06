@@ -1,0 +1,60 @@
+FSMStateNode #title {
+	background-color: rgb(0, 128, 0);
+}
+
+FSMStateNode {
+	width: 350px;
+}
+
+FSMStateNode .inspector {
+	background-color: rgb(64, 64, 64);
+}
+
+FSMTransitionNode #title {
+	background-color: rgb(0, 128, 128);
+}
+
+FSMTransitionNode .inspector {
+	background-color: rgb(64, 64, 64);
+}
+
+FSMTransitionNode {
+	width: 350px;
+}
+
+FSMShortStateNode #title {
+	background-color: rgb(0, 128, 0);
+}
+
+FSMPluggerNode #title {
+	background-color: rgb(128, 128, 0);
+}
+
+FSMChanceNode #title {
+	background-color: rgb(128, 0, 128);
+}
+
+FSMChanceNode .chanceNodeOutLabel {
+	padding: 6px 2px 4px 2px;
+}
+FSMChanceNode .chanceNodeOutPort {
+	margin: 0px 0px 0px 0px;
+
+	margin-bottom: 2px;
+
+	background-color:rgb(64,64,64);
+}
+
+FSMChanceNode .row {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+
+	background-color:rgb(64,64,64);
+
+	margin-bottom: 2px;
+}
+
+FSMChanceNode .row FloatField {
+	min-width: 35px;
+}
