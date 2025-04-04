@@ -1,5 +1,5 @@
-using FiniteStateMachine;
-using Scripts.Graphs.Editor;
+using Moths.FSM;
+using Moths.Graphs.Editor;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 
-namespace Scripts.FSM.Graphs.Editor
+namespace Moths.FSM.Graphs.Editor
 {
     [CreateAssetMenu(fileName = "Graph Properties", menuName = "FSM/Graphs/Graph Properties")]
     public class GraphProperties : ScriptableObject, IFSMGraphContainer

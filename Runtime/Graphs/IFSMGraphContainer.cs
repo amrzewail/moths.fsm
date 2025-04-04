@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Scripts.FSM.Graphs
+namespace Moths.FSM.Graphs
 {
     public interface IFSMGraphContainer
     {

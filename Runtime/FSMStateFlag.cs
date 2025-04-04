@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace FiniteStateMachine
+namespace Moths.FSM
 {
     [System.Serializable]
     public struct FSMStateFlag

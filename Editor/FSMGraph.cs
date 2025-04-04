@@ -1,5 +1,5 @@
-﻿using FiniteStateMachine;
-using Scripts.Graphs.Editor;
+﻿using Moths.FSM;
+using Moths.Graphs.Editor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,10 +10,10 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Scripts.FSM.Graphs.Editor
+namespace Moths.FSM.Graphs.Editor
 {
     using Object = UnityEngine.Object;
-    using FSM = FiniteStateMachine.FSM;
+    using FSM = Moths.FSM.FSM;
 
     public class FSMGraph : BasicGraph
     {

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace FiniteStateMachine
+namespace Moths.FSM
 {
     using Object = UnityEngine.Object;
 

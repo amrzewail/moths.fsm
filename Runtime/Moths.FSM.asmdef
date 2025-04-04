@@ -1,13 +1,10 @@
 {
-    "name": "FSM.Editor",
+    "name": "Moths.FSM",
     "rootNamespace": "",
     "references": [
-        "GUID:1ba361b2d02e81e4dac37e88d0256733",
-        "GUID:be4aba4923dfe824f99c081ed484c6fd"
+        "GUID:3c4641a474dbe544aafa49297e96ae9e"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

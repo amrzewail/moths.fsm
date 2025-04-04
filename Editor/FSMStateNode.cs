@@ -1,5 +1,5 @@
-using FiniteStateMachine;
-using Scripts.Graphs.Editor;
+using Moths.FSM;
+using Moths.Graphs.Editor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Scripts.FSM.Graphs.Editor
+namespace Moths.FSM.Graphs.Editor
 {
     [System.Serializable]
     public class FSMStateNode : BasicNode

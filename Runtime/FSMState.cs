@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using FiniteStateMachine.Attributes;
+using Moths.Attributes;
 
-namespace FiniteStateMachine
+namespace Moths.FSM
 {
     [System.Serializable]
     public abstract class FSMState : ScriptableObject

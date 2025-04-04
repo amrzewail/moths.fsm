@@ -1,0 +1,25 @@
+{
+  "name": "com.moths.fsm",
+  "displayName": "Moths FSM",
+  "version": "1.0.0",
+  "unity": "2022.3",
+  "keywords": [
+    "moths",
+    "fsm",
+    "core",
+    "graphs"
+  ],
+  "author": {
+    "name": "Amr Zewail",
+    "email": "amrzewail@hotmail.com",
+    "url": "https://github.com/amrzewail"
+  },
+  "dependencies": {
+    "com.moths.core": "1.0.0",
+    "com.moths.graphs": "1.0.0"
+  },
+  "changelog": {
+    "1.0.0": "- Initial release"
+  },
+  "license": "MIT"
+}

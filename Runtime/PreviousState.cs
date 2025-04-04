@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using FiniteStateMachine;
+using Moths.FSM;
 
-namespace FiniteStateMachine.Player
+namespace Moths.FSM.Player
 {
     [CreateAssetMenu(fileName = NAME, menuName = "FSM/" + NAME)]
     public class PreviousState : FSMState, IFSMPreviousState
