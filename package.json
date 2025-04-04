@@ -3,6 +3,7 @@
   "displayName": "Moths FSM",
   "version": "1.0.0",
   "unity": "2022.3",
+  "description": "A package for implementing finite state machines (FSM) within the Moths framework, utilizing graphs for state management.",
   "keywords": [
     "moths",
     "fsm",
