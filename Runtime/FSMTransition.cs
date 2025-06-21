@@ -68,6 +68,7 @@ namespace Moths.FSM {
 
         public bool IsProbabilitySuccess()
         {
+            if (_lastProbabilityCheck > Time.time) _lastProbabilityCheck = -50;
             if (Time.time - _lastProbabilityCheck >= probabilityCheckCooldown)
             {
                 _lastProbabilityCheck = Time.time;
