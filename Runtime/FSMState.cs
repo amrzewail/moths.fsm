@@ -70,6 +70,8 @@ namespace Moths.FSM
 
         public abstract void UpdateState(ref FSMContext ctx);
 
+        public virtual void LateUpdateState(ref FSMContext ctx) { }
+
         public virtual bool ExitState(ref FSMContext ctx)
         {
             return true;

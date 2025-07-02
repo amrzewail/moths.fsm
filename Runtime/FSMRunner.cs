@@ -20,6 +20,7 @@ namespace Moths.FSM
 
         private FSMProps _fsmProps;
         private FSMContext _context;
+        private bool _skipLateUpdate = false;
 
         public FSMState currentState => _stateBuffer[Repeat(_currentStateIndexInBuffer, _stateBuffer.Length)];
 
@@ -69,15 +70,29 @@ namespace Moths.FSM
 
         public void Update()
         {
-            if (currentState != null)
+            if (currentState)
             {
                 var transitioned = TestTransitions();
-
+                _skipLateUpdate = transitioned;
                 if (!transitioned)
                 {
                     currentState.OnUpdatePluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
                     currentState.UpdateState(ref _context);
                 }
+            }
+        }
+
+        public void LateUpdate()
+        {
+            if (_skipLateUpdate)
+            {
+                _skipLateUpdate = false;
+                return;
+            }
+
+            if (currentState)
+            {
+                currentState.LateUpdateState(ref _context);
             }
         }
 
