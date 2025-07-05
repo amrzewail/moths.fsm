@@ -57,6 +57,12 @@ namespace Moths.FSM
             _flags.Remove(flag);
         }
 
+        protected void SetFlag(FSMStateFlag flag, bool value)
+        {
+            if (value) SetFlag(flag);
+            else UnsetFlag(flag);
+        }
+
         public bool HasFlag(FSMStateFlag flag)
         {
             if (string.IsNullOrEmpty(flag.name)) return true;
