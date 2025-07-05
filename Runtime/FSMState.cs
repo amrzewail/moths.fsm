@@ -20,7 +20,7 @@ namespace Moths.FSM
         [RequireInterface(typeof(IFSMPlugger))] [SerializeField] [HideInInspector] public List<Object> OnUpdatePluggers;
         [RequireInterface(typeof(IFSMPlugger))] [SerializeField] [HideInInspector] public List<Object> OnExitPluggers;
 
-       //[HideInInspector]
+        [HideInInspector]
         public Transition[] transitions;
 
         private HashSet<FSMStateFlag> _flags = new HashSet<FSMStateFlag>();

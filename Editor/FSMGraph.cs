@@ -302,6 +302,7 @@ namespace Moths.FSM.Graphs.Editor
             Graph.stateTransitionLinks.Clear();
 
             List<Object> includedNodes = new List<Object>();
+            Dictionary<Transition, float> transitionYPositions = new Dictionary<Transition, float>();
 
             foreach (var n in nodes)
             {
@@ -329,6 +330,7 @@ namespace Moths.FSM.Graphs.Editor
                             ProcessStateTransition(t, ((FSMTransitionNode)inputNode));
 
                             transitions.Add(t);
+                            transitionYPositions[t] = inputNode.GetPosition().y;
                         }
                         else if (inputNode is FSMPluggerNode)
                         {
@@ -389,6 +391,11 @@ namespace Moths.FSM.Graphs.Editor
                                 AddTransitionLink(((FSMShortStateNode)x.output.node).GUID, state.GUID, 0, "");
                             }
                         }
+                    });
+                    transitions.Sort((t0, t1) =>
+                    {
+                        if (!transitionYPositions.ContainsKey(t0) || !transitionYPositions.ContainsKey(t1)) return 0;
+                        return transitionYPositions[t0].CompareTo(transitionYPositions[t1]);
                     });
                     state.state.transitions = transitions.ToArray();
                     state.state.OnStartPluggers = startPluggers;
