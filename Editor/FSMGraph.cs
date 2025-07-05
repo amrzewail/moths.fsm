@@ -359,9 +359,9 @@ namespace Moths.FSM.Graphs.Editor
                                 t.flag = state.FindPortFlag(edge.output);
                                 if (inputNode is FSMStateNode) t.newState = ((FSMStateNode)inputNode).state;
                                 if (inputNode is FSMShortStateNode) t.newState = ((FSMShortStateNode)inputNode).state;
-                                transitions.Add(t);
-                                
                                 AddTransitionLink(state.GUID, ((BasicNode)inputNode).GUID, 1, state.FindPortFlag(edge.output));
+                                transitions.Add(t);
+                                transitionYPositions[t] = inputNode.GetPosition().y;
                             }
                         }
                         else if (inputNode is FSMChanceNode)
