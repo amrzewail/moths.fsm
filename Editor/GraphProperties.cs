@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Moths.FSM.Graphs.Editor
 {
-    [CreateAssetMenu(fileName = "Graph Properties", menuName = "FSM/Graphs/Graph Properties")]
+    [CreateAssetMenu(fileName = "Graph Properties", menuName = "Moths/FSM/Graph Properties")]
     public class GraphProperties : ScriptableObject, IFSMGraphContainer
     {
         public Object graphProperties => this;

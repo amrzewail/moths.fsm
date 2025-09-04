@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Moths.FSM;
 
-namespace Moths.FSM.Player
+namespace Moths.FSM.States
 {
-    [CreateAssetMenu(fileName = NAME, menuName = "FSM/" + NAME)]
+    [FSMNode("Previous State")]
     public class PreviousState : FSMState, IFSMPreviousState
     {
         public const string NAME = "Previous State";

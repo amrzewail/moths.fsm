@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Moths.FSM
 {
-    [CreateAssetMenu(menuName = "FSM/FSM")]
+    [CreateAssetMenu(menuName = "Moths/FSM/FSM")]
     public class FSM : ScriptableObject
     {
 #if UNITY_EDITOR

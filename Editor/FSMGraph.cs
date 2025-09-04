@@ -21,15 +21,6 @@ namespace Moths.FSM.Graphs.Editor
 
         private GraphProperties Graph => (GraphProperties)_currentFSM.graphProperties;
 
-        //[MenuItem("FSM/Graph")]
-        //public static void OpenGraphWindow()
-        //{
-        //    var window = GetWindow<FSMGraph>(false, "FSM Editor", true);
-        //    window.titleContent = new GUIContent("FSM Graph");
-        //}
-
-
-
         [OnOpenAsset]
         private static bool OpenFSMAsset(int instanceID, int line)
         {
@@ -428,8 +419,7 @@ namespace Moths.FSM.Graphs.Editor
 
             }
 
-            Object[] childNodes = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(_currentFSM));
-
+            Object[] childNodes = AssetDatabase.LoadAllAssetRepresentationsAtPath(AssetDatabase.GetAssetPath(_currentFSM));
 
             for (int i = childNodes.Length - 1; i >= 0; i--)
             {

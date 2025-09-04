@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Moths.Attributes;
+using System;
 
 namespace Moths.FSM
 {
+    using Object = UnityEngine.Object;
+
     [System.Serializable]
     public abstract class FSMState : ScriptableObject
     {
         public string phase { get; protected set; } = "";
-        public float speed { get; protected set; } = 1;
-        public bool mirror { get; protected set; } = false;
 
         [SerializeField] protected string _name;
         [Space]
@@ -45,7 +46,7 @@ namespace Moths.FSM
             phase = "";
         }
 
-        public virtual FSMStateFlag[] GetFlags() => new FSMStateFlag[0];
+        public virtual FSMStateFlag[] GetFlags() => Array.Empty<FSMStateFlag>();
 
         protected void SetFlag(FSMStateFlag flag)
         {
