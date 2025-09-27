@@ -107,7 +107,18 @@ namespace Moths.FSM
         {
             bool transitioned = false;
 
-            var newState = currentState.CheckTransitions(ref _context);
+            FSMState newState = null;
+
+            var parentState = CurrentFSM.parentState;
+            if (parentState)
+            {
+                newState = parentState.CheckTransitions(ref _context);
+            }
+
+            if (!newState)
+            {
+                newState = currentState.CheckTransitions(ref _context);
+            }
 
             if (newState)
             {
@@ -136,7 +147,7 @@ namespace Moths.FSM
                 _currentStateIndexInBuffer++;
             }
 
-            state = InstantiateState(state);
+            //state = InstantiateState(state);
             _stateBuffer[Repeat(_currentStateIndexInBuffer, _stateBuffer.Length)] = state;
             _fsmProps.stateStartTime = Time.time;
             _context.SetValue(_fsmProps);

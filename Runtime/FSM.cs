@@ -16,6 +16,6 @@ namespace Moths.FSM
 
 
         public FSMState startState;
-
+        public FSMState parentState;
     }
 }
