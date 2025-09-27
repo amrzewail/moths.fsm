@@ -114,10 +114,13 @@ namespace Moths.FSM
 
             FSMState newState = null;
 
-            var parentState = CurrentFSM.parentState;
-            if (parentState)
+            if (CurrentFSM)
             {
-                newState = parentState.CheckTransitions(ref _context);
+                var parentState = CurrentFSM.parentState;
+                if (parentState)
+                {
+                    newState = parentState.CheckTransitions(ref _context);
+                }
             }
 
             if (!newState)
