@@ -12,6 +12,11 @@ namespace Moths.FSM
         public float stateStartTime;
     }
 
+    public interface ITransitionalState
+    {
+        bool ShouldTestTransitionsAfterStart();
+    }
+
     [System.Serializable]
     public class FSMRunner
     {
@@ -127,6 +132,10 @@ namespace Moths.FSM
                     currentState.OnExitPluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
                     TransitionToState(newState);
                     transitioned = true;
+                    if (newState is ITransitionalState transitionalState && transitionalState.ShouldTestTransitionsAfterStart())
+                    {
+                        TestTransitions();
+                    }
                 }
             }
 
