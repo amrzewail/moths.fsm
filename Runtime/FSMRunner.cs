@@ -127,12 +127,14 @@ namespace Moths.FSM
 
             if (newState)
             {
+                bool isDifferentState = newState != currentState;
+
                 if (currentState.ExitState(ref _context))
                 {
                     currentState.OnExitPluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
                     TransitionToState(newState);
                     transitioned = true;
-                    if (newState is ITransitionalState transitionalState && transitionalState.ShouldTestTransitionsAfterStart())
+                    if (isDifferentState && newState is ITransitionalState transitionalState && transitionalState.ShouldTestTransitionsAfterStart())
                     {
                         TestTransitions();
                     }
