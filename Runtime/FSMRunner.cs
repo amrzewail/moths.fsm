@@ -151,6 +151,8 @@ namespace Moths.FSM
             _stateBuffer[Repeat(_currentStateIndexInBuffer, _stateBuffer.Length)] = state;
             _fsmProps.stateStartTime = Time.time;
             _context.SetValue(_fsmProps);
+
+            currentState.ClearFlags();
             currentState.OnStartPluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
             currentState.StartState(ref _context);
 

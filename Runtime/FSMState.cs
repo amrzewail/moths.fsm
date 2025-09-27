@@ -70,6 +70,12 @@ namespace Moths.FSM
             return _flags.Contains(flag);
         }
 
+        public void ClearFlags()
+        {
+            if (_flags == null) return;
+            _flags.Clear();
+        }
+
         public virtual bool StartState(ref FSMContext ctx)
         {
             return true;
