@@ -15,9 +15,14 @@ namespace Moths.FSM.Graphs.Editor
     using Object = UnityEngine.Object;
     using FSM = Moths.FSM.FSM;
 
+
     public class FSMGraph : BasicGraph
     {
         private FSM _currentFSM;
+        private FSMGraphSidebar _sidebar;
+        
+        private FSMStateNode _viewingState;
+        private Vector3 _viewingStateOffset;
 
         private GraphProperties Graph => (GraphProperties)_currentFSM.graphProperties;
 
@@ -48,11 +53,14 @@ namespace Moths.FSM.Graphs.Editor
             return false;
         }
 
+        protected override void Update()
+        {
+            base.Update();
+        }
 
 
         protected override void OnEnable()
         {
-
             Button selectAssetButton = new Button(() =>
             {
                 if (!_currentFSM) return;
@@ -83,37 +91,62 @@ namespace Moths.FSM.Graphs.Editor
 
             base.OnEnable();
 
+            CreateSidebar();
+
             if (_currentFSM)
             {
                 UpdateView();
             }
 
-            _graphView.transform.scale = new Vector3(1, 0.95f, 1);
-        }
+            //_graphView.style.scale = new Vector3(1, 0.95f, 1);
 
-        private void OnGUI()
-        {
-            if (Event.current.type == EventType.DragUpdated)
+            OverlayRoot.styleSheets.Add(Resources.Load<StyleSheet>("styles"));
+
+            rootVisualElement.RegisterCallback<DragUpdatedEvent>(evt =>
             {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                Event.current.Use();
-            }
-            else if (Event.current.type == EventType.DragPerform)
+            });
+
+            rootVisualElement.RegisterCallback<DragPerformEvent>(evt =>
             {
-                // To consume drag data.
                 DragAndDrop.AcceptDrag();
+
+                Vector2 graphPos = _graphView.GetMousePositionInGraph(evt.mousePosition);
+
                 if (DragAndDrop.paths.Length == DragAndDrop.objectReferences.Length)
                 {
                     for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
                     {
                         Object obj = DragAndDrop.objectReferences[i];
-                        AddNode(obj);
+                        AddNode(obj, graphPos);
                     }
                 }
+            });
+        }
+
+        private void CreateSidebar()
+        {
+            OverlayRoot.style.flexDirection = FlexDirection.Row;
+            
+            _sidebar = new FSMGraphSidebar();
+            _sidebar.Title = "States";
+
+            OverlayRoot.Insert(0, _sidebar);
+        }
+
+        private void UpdateSidebar()
+        {
+            _sidebar.Clear();
+
+            _sidebar.AddItem("All States",  ViewAllStates);
+            for (int i = 0; i < Graph.stateNodes.Count; i++)
+            {
+                var state = Graph.stateNodes[i];
+                _sidebar.AddItem(Graph.stateNodes[i].state.name, () => ViewState(state));
             }
         }
 
-        private void AddNode(Object obj)
+        private void AddNode(Object obj, Vector3? position)
         {
             if (obj is FSMState)
             {
@@ -132,20 +165,20 @@ namespace Moths.FSM.Graphs.Editor
                 }
                 if (!contains)
                 {
-                    AddState((FSMState)obj);
+                    AddState((FSMState)obj, position);
                 }
                 else
                 {
-                    AddShortState((FSMState)obj);
+                    AddShortState((FSMState)obj, position);
                 }
             }
             else if (obj is FSMTransition)
             {
-                AddTransition((FSMTransition)obj);
+                AddTransition((FSMTransition)obj, position);
             }
             else if (obj is IFSMPlugger)
             {
-                AddPlugger((IFSMPlugger)obj);
+                AddPlugger((IFSMPlugger)obj, position);
             }
         }
 
@@ -203,37 +236,45 @@ namespace Moths.FSM.Graphs.Editor
                 AssetDatabase.SaveAssetIfDirty(_currentFSM);
             }
 
-            AddNode(nodeInstance);
+            Vector2 graphCenter = _graphView.contentContainer.WorldToLocal(
+                _graphView.worldBound.center
+            );
+            AddNode(nodeInstance, graphCenter);
         }
 
-        private void AddState(FSMState state)
+        private void AddState(FSMState state, Vector3? position)
         {
             FSMStateNode node = new FSMStateNode(state);
-            _graphView.AddNode(node, true);
+            if (position != null) node.position = position.Value;
+            _graphView.AddNode(node, position == null);
+            UpdateSidebar();
         }
 
-        private void AddShortState(FSMState state)
+        private void AddShortState(FSMState state, Vector3? position)
         {
             FSMShortStateNode node = new FSMShortStateNode(state);
-            _graphView.AddNode(node, true);
+            if (position != null) node.position = position.Value;
+            _graphView.AddNode(node, position == null);
         }
 
-        private void AddTransition(FSMTransition transition)
+        private void AddTransition(FSMTransition transition, Vector3? position)
         {
-            FSMTransitionNode trans = new FSMTransitionNode(transition);
-            _graphView.AddNode(trans, true);
+            FSMTransitionNode node = new FSMTransitionNode(transition);
+            if (position != null) node.position = position.Value;
+            _graphView.AddNode(node, position == null);
         }
 
-        private void AddPlugger(IFSMPlugger plugger)
+        private void AddPlugger(IFSMPlugger plugger, Vector3? position)
         {
-            FSMPluggerNode plug = new FSMPluggerNode(plugger);
-            _graphView.AddNode(plug, true);
+            FSMPluggerNode node = new FSMPluggerNode(plugger);
+            if (position != null) node.position = position.Value;
+            _graphView.AddNode(node, position == null);
         }
 
         private void AddChanceNode()
         {
-            FSMChanceNode chance = new FSMChanceNode(new List<FSMChanceNode.Chance>() { new FSMChanceNode.Chance(1), new FSMChanceNode.Chance(1) });
-            _graphView.AddNode(chance, true);
+            FSMChanceNode node = new FSMChanceNode(new List<FSMChanceNode.Chance>() { new FSMChanceNode.Chance(1), new FSMChanceNode.Chance(1) });
+            _graphView.AddNode(node, true);
         }
 
 
@@ -294,6 +335,9 @@ namespace Moths.FSM.Graphs.Editor
 
             List<Object> includedNodes = new List<Object>();
             Dictionary<Transition, float> transitionYPositions = new Dictionary<Transition, float>();
+
+            var viewingState = _viewingState;
+            ViewAllStates();
 
             foreach (var n in nodes)
             {
@@ -433,6 +477,11 @@ namespace Moths.FSM.Graphs.Editor
             AssetDatabase.SaveAssets();
 
             UpdateView();
+
+            if (viewingState != null)
+            {
+                ViewState(viewingState);
+            }
         }
 
         private void OnCopy()
@@ -498,59 +547,138 @@ namespace Moths.FSM.Graphs.Editor
             });
         }
 
+        private void ViewState(FSMStateNode state)
+        {
+            if (_viewingState == state) return;
+
+            UnoffsetForViewingState();
+
+            _viewingState = state;
+
+            OffsetForViewingState();
+
+            _sidebar.Title = state.state.name;
+
+            string nodeGuid = state.GUID;
+
+            HashSet<string> relatedGuids = new();
+            Stack<(string output, string input)> links = new();
+            Dictionary<string, string> linksDict = new();
+            for (int i = 0; i < Graph.stateTransitionLinks.Count; i++)
+            {
+                var link = Graph.stateTransitionLinks[i];
+                linksDict[link.outputGUID] = link.inputGUID;
+
+                if (link.outputGUID != nodeGuid && link.inputGUID != nodeGuid) continue;
+                links.Push((link.outputGUID, link.inputGUID));
+            }
+
+            while (links.Count > 0)
+            {
+                var link = links.Pop();
+                if (relatedGuids.Contains(link.input)) continue;
+                relatedGuids.Add(link.input);
+                relatedGuids.Add(link.output);
+                if (!linksDict.ContainsKey(link.input)) continue;
+                links.Push((link.input, linksDict[link.input]));
+            }
+
+            relatedGuids.Add(state.GUID);
+
+            _graphView.Nodes.ForEach(x =>
+            {
+                x.style.visibility = relatedGuids.Contains(x.GUID) ? Visibility.Visible : Visibility.Hidden;
+                x.CanMove = x.GUID != _viewingState.GUID;
+            });
+            
+            _graphView.Edges.ForEach(x => x.style.visibility = 
+            (relatedGuids.Contains(((BasicNode)x.output.node).GUID) && relatedGuids.Contains(((BasicNode)x.input.node).GUID)) ? Visibility.Visible : Visibility.Hidden);
+        }
+
+        private void ViewAllStates()
+        {
+            if (_viewingState == null) return;
+
+            UnoffsetForViewingState();
+
+            var node = _graphView.Nodes.SingleOrDefault(x => x.GUID == _viewingState.GUID);
+            if (node != null)
+            {
+                node.CanMove = true;
+            }
+
+            _viewingState = null;
+            _sidebar.Title = "States";
+            _graphView.Nodes.ForEach(x => x.style.visibility = Visibility.Visible);
+            _graphView.Edges.ForEach(x => x.style.visibility = Visibility.Visible);
+        }
+
+        private void OffsetForViewingState()
+        {
+            if (_viewingState == null) return;
+            Vector3 offset = _graphView.Nodes.SingleOrDefault(x => x.GUID == _viewingState.GUID).position;
+            _graphView.Nodes.ForEach(x => x.SetPosition(x.position - offset));
+            _viewingStateOffset = offset;
+        }
+
+        private void UnoffsetForViewingState()
+        {
+            if (_viewingState == null) return;
+            Vector3 offset = _viewingStateOffset;
+            _graphView.Nodes.ForEach(x => x.SetPosition(x.position + offset));
+        }
+
         private void UpdateView()
         {
             _graphView.ClearNodes();
             _graphView.ClearEdges();
 
-            foreach (var transition in Graph.transitionNodes)
+            foreach (var node in Graph.transitionNodes)
             {
-                if (transition.transition == null) continue;
+                if (node.transition == null) continue;
 
-                var tempTransition = new FSMTransitionNode(transition.transition);
-                tempTransition.GUID = transition.GUID;
-                tempTransition.position = transition.position;
-                _graphView.AddNode(tempTransition);
+                var n = new FSMTransitionNode(node.transition);
+                n.GUID = node.GUID;
+                n.position = node.position;
+                _graphView.AddNode(n);
             }
 
-            foreach (var state in Graph.stateNodes)
+            foreach (var node in Graph.stateNodes)
             {
-                if (state.state == null) continue;
+                if (node.state == null) continue;
 
-                var tempState = new FSMStateNode(state.state);
-                tempState.GUID = state.GUID;
-                tempState.position = state.position;
-                _graphView.AddNode(tempState);
+                var n = new FSMStateNode(node.state);
+                n.GUID = node.GUID;
+                n.position = node.position;
+                _graphView.AddNode(n);
             }
 
-            foreach (var state in Graph.shortStateNodes)
+            foreach (var node in Graph.shortStateNodes)
             {
-                if (state.state == null) continue;
+                if (node.state == null) continue;
 
-                var tempState = new FSMShortStateNode(state.state);
-                tempState.GUID = state.GUID;
-                tempState.position = state.position;
-                _graphView.AddNode(tempState);
+                var n = new FSMShortStateNode(node.state);
+                n.GUID = node.GUID;
+                n.position = node.position;
+                _graphView.AddNode(n);
             }
 
-            foreach (var plugger in Graph.pluggerNodes)
+            foreach (var node in Graph.pluggerNodes)
             {
-                if (plugger.pluggerObj == null) continue;
+                if (node.pluggerObj == null) continue;
 
-                var tempPlugger = new FSMPluggerNode((IFSMPlugger)plugger.pluggerObj);
-                tempPlugger.GUID = plugger.GUID;
-                tempPlugger.position = plugger.position;
-                _graphView.AddNode(tempPlugger);
+                var n = new FSMPluggerNode((IFSMPlugger)node.pluggerObj);
+                n.GUID = node.GUID;
+                n.position = node.position;
+                _graphView.AddNode(n);
             }
 
-            foreach (var chance in Graph.chanceNodes)
+            foreach (var node in Graph.chanceNodes)
             {
-                //if (plugger.pluggerObj == null) continue;
-
-                var tempChance = new FSMChanceNode(chance.chances);
-                tempChance.GUID = chance.GUID;
-                tempChance.position = chance.position;
-                _graphView.AddNode(tempChance);
+                var n = new FSMChanceNode(node.chances);
+                n.GUID = node.GUID;
+                n.position = node.position;
+                _graphView.AddNode(n);
             }
 
             foreach (var link in Graph.stateTransitionLinks)
@@ -559,17 +687,20 @@ namespace Moths.FSM.Graphs.Editor
                 if (outputNode == null) continue;
                 var inputNode = _graphView.GetNodeByGUID(link.inputGUID);
                 if (inputNode == null) continue;
+
+                Edge edge = null;
+
                 if(outputNode is FSMStateNode)
                 {
                     if (inputNode is FSMTransitionNode)
                     {
                         if (string.IsNullOrEmpty(link.flag))
                         {
-                            _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMTransitionNode)inputNode).inPort);
+                           edge = _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMTransitionNode)inputNode).inPort);
                         }
                         else
                         {
-                            _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMTransitionNode)inputNode).inPort);
+                            edge = _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMTransitionNode)inputNode).inPort);
                         }
                     }
                     else if(inputNode is FSMStateNode)
@@ -577,16 +708,16 @@ namespace Moths.FSM.Graphs.Editor
                         switch (link.index)
                         {
                             case 0:
-                                _graphView.LinkNodes(((FSMStateNode)outputNode).inheritOutPort, ((FSMStateNode)inputNode).inheritPort);
+                                edge = _graphView.LinkNodes(((FSMStateNode)outputNode).inheritOutPort, ((FSMStateNode)inputNode).inheritPort);
                                 break;
                             case 1:
                                 if (string.IsNullOrEmpty(link.flag))
                                 {
-                                    _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMStateNode)inputNode).startPort);
+                                    edge = _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMStateNode)inputNode).startPort);
                                 }
                                 else
                                 {
-                                    _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMStateNode)inputNode).startPort);
+                                    edge = _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMStateNode)inputNode).startPort);
                                 }
                                 break;
                         }
@@ -598,11 +729,11 @@ namespace Moths.FSM.Graphs.Editor
                             case 1:
                                 if (string.IsNullOrEmpty(link.flag))
                                 {
-                                    _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMShortStateNode)inputNode).startPort);
+                                    edge = _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMShortStateNode)inputNode).startPort);
                                 }
                                 else
                                 {
-                                    _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMShortStateNode)inputNode).startPort);
+                                    edge = _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMShortStateNode)inputNode).startPort);
                                 }
                                 break;
                         }
@@ -612,13 +743,13 @@ namespace Moths.FSM.Graphs.Editor
                         switch (link.index)
                         {
                             case 0:
-                                _graphView.LinkNodes(((FSMStateNode)outputNode).startPluggerPort, ((FSMPluggerNode)inputNode).inPort);
+                                edge = _graphView.LinkNodes(((FSMStateNode)outputNode).startPluggerPort, ((FSMPluggerNode)inputNode).inPort);
                                 break;
                             case 1:
-                                _graphView.LinkNodes(((FSMStateNode)outputNode).updatePluggerPort, ((FSMPluggerNode)inputNode).inPort);
+                                edge = _graphView.LinkNodes(((FSMStateNode)outputNode).updatePluggerPort, ((FSMPluggerNode)inputNode).inPort);
                                 break;
                             case 2:
-                                _graphView.LinkNodes(((FSMStateNode)outputNode).exitPluggerPort, ((FSMPluggerNode)inputNode).inPort);
+                                edge = _graphView.LinkNodes(((FSMStateNode)outputNode).exitPluggerPort, ((FSMPluggerNode)inputNode).inPort);
                                 break;
                         }
                     }
@@ -626,11 +757,11 @@ namespace Moths.FSM.Graphs.Editor
                     {
                         if (string.IsNullOrEmpty(link.flag))
                         {
-                            _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMChanceNode)inputNode).inPort);
+                            edge = _graphView.LinkNodes(((FSMStateNode)outputNode).transitionPort, ((FSMChanceNode)inputNode).inPort);
                         }
                         else
                         {
-                            _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMChanceNode)inputNode).inPort);
+                            edge = _graphView.LinkNodes(((FSMStateNode)outputNode).GetPortByFlag(link.flag), ((FSMChanceNode)inputNode).inPort);
                         }
                     }
                 }
@@ -638,38 +769,43 @@ namespace Moths.FSM.Graphs.Editor
                 {
                     if (inputNode is FSMStateNode)
                     {
-                        _graphView.LinkNodes(((FSMShortStateNode)outputNode).inheritOutPort, ((FSMStateNode)inputNode).inheritPort);
+                        edge = _graphView.LinkNodes(((FSMShortStateNode)outputNode).inheritOutPort, ((FSMStateNode)inputNode).inheritPort);
                     }
                 }
                 else if (outputNode is FSMTransitionNode)
                 {
                     if (inputNode is FSMStateNode)
                     {
-                        _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMStateNode)inputNode).startPort);
-                    }else if(inputNode is FSMShortStateNode)
+                        edge = _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMStateNode)inputNode).startPort);
+                    }
+                    else if(inputNode is FSMShortStateNode)
                     {
-                        _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMShortStateNode)inputNode).startPort);
-                    }else if (inputNode is FSMTransitionNode)
+                        edge = _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMShortStateNode)inputNode).startPort);
+                    }
+                    else if (inputNode is FSMTransitionNode)
                     {
-                        _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMTransitionNode)inputNode).inPort);
-                    }else if (inputNode is FSMChanceNode)
+                        edge = _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMTransitionNode)inputNode).inPort);
+                    }
+                    else if (inputNode is FSMChanceNode)
                     {
-                        _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMChanceNode)inputNode).inPort);
+                        edge = _graphView.LinkNodes(((FSMTransitionNode)outputNode).outPort, ((FSMChanceNode)inputNode).inPort);
                     }
                 }
                 else if (outputNode is FSMChanceNode)
                 {
                     if (inputNode is FSMStateNode)
                     {
-                        _graphView.LinkNodes(((FSMChanceNode)outputNode).outPorts[link.index], ((FSMStateNode)inputNode).startPort);
+                        edge = _graphView.LinkNodes(((FSMChanceNode)outputNode).outPorts[link.index], ((FSMStateNode)inputNode).startPort);
                     }
                     else if (inputNode is FSMShortStateNode)
                     {
-                        _graphView.LinkNodes(((FSMChanceNode)outputNode).outPorts[link.index], ((FSMShortStateNode)inputNode).startPort);
+                        edge = _graphView.LinkNodes(((FSMChanceNode)outputNode).outPorts[link.index], ((FSMShortStateNode)inputNode).startPort);
                     }
                 }
             }
 
+
+            UpdateSidebar();
         }
 
         //private void DrawState(FSMState state, int row, int column, int rowOffset, int columnOffset, List<ScriptableObject> addedObjects)
