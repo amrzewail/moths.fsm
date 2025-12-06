@@ -63,7 +63,7 @@ namespace Moths.FSM
 
             if (currentState.ExitState(ref _context))
             {
-                currentState.OnExitPluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
+                for (int i = 0; i < currentState.OnExitPluggers.Count; i++) (currentState.OnExitPluggers[i] as IFSMPlugger).Execute(ref _context);
                 Start(fsm);
                 return true;
             }
@@ -85,15 +85,16 @@ namespace Moths.FSM
 
         public void Update()
         {
-            if (currentState)
+            if (!CurrentFSM) return;
+
+            if (!currentState) return;
+
+            var transitioned = TestTransitions();
+            _skipLateUpdate = transitioned;
+            if (!transitioned)
             {
-                var transitioned = TestTransitions();
-                _skipLateUpdate = transitioned;
-                if (!transitioned)
-                {
-                    currentState.OnUpdatePluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
-                    currentState.UpdateState(ref _context);
-                }
+                for (int i = 0; i < currentState.OnUpdatePluggers.Count; i++) (currentState.OnUpdatePluggers[i] as IFSMPlugger).Execute(ref _context);
+                currentState.UpdateState(ref _context);
             }
         }
 
@@ -144,7 +145,7 @@ namespace Moths.FSM
 
                 if (currentState.ExitState(ref _context))
                 {
-                    currentState.OnExitPluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
+                    for (int i = 0; i < currentState.OnExitPluggers.Count; i++) (currentState.OnExitPluggers[i] as IFSMPlugger).Execute(ref _context);
                     TransitionToState(newState);
                     transitioned = true;
                     if (isDifferentState && newState is ITransitionalState transitionalState && transitionalState.ShouldTestTransitionsAfterStart())
@@ -177,7 +178,7 @@ namespace Moths.FSM
             _context.SetValue(_fsmProps);
 
             currentState.ClearFlags();
-            currentState.OnStartPluggers.ForEach(x => (x as IFSMPlugger).Execute(ref _context));
+            for (int i = 0; i < currentState.OnStartPluggers.Count; i++) (currentState.OnStartPluggers[i] as IFSMPlugger).Execute(ref _context);
             currentState.StartState(ref _context);
 
             StateChanged?.Invoke(currentState);
