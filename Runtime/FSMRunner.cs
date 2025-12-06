@@ -45,6 +45,9 @@ namespace Moths.FSM
             CurrentFSM = fsm;
             if (!fsm) return;
 
+            _currentStateIndexInBuffer = 0;
+            for (int i = 0; i < _stateBuffer.Length; i++) _stateBuffer[i] = null;
+
             TransitionToState(fsm.startState);
 
             while(TestTransitions());
@@ -78,8 +81,6 @@ namespace Moths.FSM
         public void Clear()
         {
             CurrentFSM = null;
-            _currentStateIndexInBuffer = 0;
-            for (int i = 0; i < _stateBuffer.Length; i++) _stateBuffer[i] = null;
         }
 
         public void Update()
