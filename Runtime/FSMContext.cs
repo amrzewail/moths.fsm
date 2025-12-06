@@ -39,5 +39,10 @@ namespace Moths.FSM
         {
             _types[typeof(TValue)] = value;
         }
+
+        public void Clear()
+        {
+            _types.Clear();
+        }
     }
 }

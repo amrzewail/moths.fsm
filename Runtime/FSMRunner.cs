@@ -78,6 +78,9 @@ namespace Moths.FSM
         public void Clear()
         {
             CurrentFSM = null;
+            _currentStateIndexInBuffer = 0;
+            for (int i = 0; i < _stateBuffer.Length; i++) _stateBuffer[i] = null;
+            Context.Clear();
         }
 
         public void Update()
