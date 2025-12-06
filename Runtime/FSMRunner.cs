@@ -68,6 +68,13 @@ namespace Moths.FSM
             return false;
         }
 
+        public void CleanUpAndClear()
+        {
+            if (!currentState) return;
+            currentState.CleanUp(ref _context);
+            Clear();
+        }
+
         public void Clear()
         {
             CurrentFSM = null;
